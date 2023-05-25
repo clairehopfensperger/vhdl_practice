@@ -1,0 +1,134 @@
+link to txtbk: http://wuhongyi.cn/FPGANote/pdf/VHDL/FPGAPrototypingbyVHDLExamples.pdf
+
+----------------------------------------------------------------------------------------
+general notes:
+
+- pin assignments done in constraints, check pg 23 of txtbk
+- artificial failure to cleanly cut off sim in tb, check pg 28 of txtbk
+	- assert false 
+   	  report "Simulation Completed" 
+    	  severity failure;
+
+- doing arithmetic with std_logic_vector/std_logic, must do: 
+	- std_logic_vector(unsigned(num_a) [arithmetic, ex. +, -] unsigned (num_b));
+- =, >, < evaluate to booleans, so if i want to compare two std_logic_vector/std_logic, I have to do an if statement with the comparison as the condition and then hardcode the result inside the statement.
+- different ways to create a clock in a testbench: https://electronics.stackexchange.com/questions/148320/proper-clock-generation-for-vhdl-testbenches
+
+
+----------------------------------------------------------------------------------------
+instantiation:
+
+- make separate file with entity and architecture, then use entity instantiation method (see add_2bits)
+
+----------------------------------------------------------------------------------------
+if statement:
+
+process(option, [extra stuff]) is
+begin
+
+	if option = "00" then
+		output <= something;
+	elsif option = "01" then
+		output <= something_else;
+	else
+		output <= something_else;
+	end if;
+
+end process;
+
+~~~~~~~~~~~~~~~~~~~
+
+case statement:
+
+process(option, [extra stuff]) is
+begin
+
+	case option is
+		when "00" =>
+			output <= something;
+		when "01" =>
+			output <= something_else;
+		when others =>  -- "default"
+			output <= something_else;
+	end case;
+
+end process;
+
+----------------------------------------------------------------------------------------
+structure of vhd file:
+
+-- include libraries 
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+-- entity is like the module header kind of.
+-- port structure: "name : in/out type".
+entity practice2 is
+    Port (
+        a   : in std_logic_vector(1 downto 0);
+        b   : in std_logic_vector(1 downto 0);
+        c   : out std_logic_vector(1 downto 0)  -- NOTE: don't include ';' on last port
+    );
+end practice2;
+
+-- architecture is like the always blocks with regs (aka signals) declared inside.
+architecture arch_p2 of practice2 is
+    -- signals here     
+begin
+    c <= a xor b; 
+end arch_p2;
+
+----------------------------------------------------------------------------------------
+structure of tb vhd file:
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity tb_practice2 is
+    -- leave empty for tb
+end tb_practice2;
+
+architecture arch_tb_p2 of tb_practice2 is
+    signal in_a, in_b : std_logic_vector(1 downto 0);
+    signal out_c : std_logic_vector(1 downto 0);
+begin
+    -- initialize practice2 
+    DUT : entity work.practice2(arch_p2)
+        port map(  -- NOTE: use commas here instead of semicolons 
+            a => in_a,
+            b => in_b,
+            c => out_c 
+        );
+        
+    -- tests 
+    process  -- for some reason this repeats a ton, let's figure this out - FIXED (see below)
+    begin
+        -- test 1 
+        in_a <= "00";
+        in_b <= "01";
+        wait for 20 ns;
+        
+        -- test 2 
+        in_a <= "01";
+        in_b <= "10";
+        wait for 20 ns;
+        
+        -- test 3 
+        in_a <= "11";
+        in_b <= "01";
+        wait for 20 ns;
+        
+        --wait;  -- adding this line fixed the repetition 
+               -- repetition caused by the "wait for 20 ns" repeats instead of doing 20, 40, 60
+   
+        -- terminate sim - done so by generating an artificial failure which stops the simulation after the last wait statement
+            -- cannot use with "wait"
+        assert false 
+        report "Simulation Completed" 
+        severity failure; 
+        
+    end process;
+
+end arch_tb_p2;
+
+----------------------------------------------------------------------------------------
