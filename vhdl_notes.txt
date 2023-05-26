@@ -46,6 +46,11 @@ general notes:
 
 - implementing an FSM: https://www.allaboutcircuits.com/technical-articles/implementing-a-finite-state-machine-in-vhdl/
 
+- jsyk there is a for loop in vhdl <3
+
+- pg 111 has better way of doing FSMs compared to my factorial module
+	- try another FSM system thing with better way
+
 ----------------------------------------------------------------------------------------
 instantiation:
 
