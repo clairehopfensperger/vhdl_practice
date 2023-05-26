@@ -34,19 +34,18 @@ use IEEE.NUMERIC_STD.ALL;
 use IEEE.std_logic_arith.ALL;
 
 entity tb_ALU_w_reg is
-    generic (
-        clock_delay : time := 5 ns;
-        sim_delay   : time := 20 ns 
-    );
 end tb_ALU_w_reg;
 
 architecture arch_tb of tb_ALU_w_reg is
+    constant T          : time := 10 ns;  -- clk period
+    --constant SIM_DELAY  : time := 20 ns;
+    
     signal clk, rst                 : std_logic;
-    signal num                      : std_logic_vector(3 downto 0);
+    signal num                      : std_logic_vector(5 downto 0);
     signal en_a, en_b, en_c         : std_logic;
     signal sel_a_path, sel_b_path   : std_logic;  -- {0 = in, 1 = C}
     signal alu_control              : std_logic_vector(2 downto 0);
-    signal result                   : std_logic_vector(3 downto 0);
+    signal result                   : std_logic_vector(5 downto 0);
     signal val_to_display           : std_logic_vector(1 downto 0);
 begin
     
@@ -64,109 +63,125 @@ begin
             val_to_disp => val_to_display,
             result => result
         );
-      
-    -- generating clk?
-    clk <= not clk after clock_delay;
+    
+    -- clock 
+    -- 10 ns clk running forever 
+    process
+    begin
+        clk <= '0';
+        wait for T/2;
+        clk <= '1';
+        wait for T/2;
+    end process;
         
+    -- reset changed to start sim 
+    rst <= '0', '1' after T/2;
+    
     -- tests 
     process
     begin
         
-        -- start clk and rst
-        rst <= '0';
-        clk <= '0';
-        wait for sim_delay;
-        rst <= '1';
-        wait for sim_delay;
+        wait until falling_edge(clk);
+        wait until falling_edge(clk);
         
         -- load A with 3 
-        num <= conv_std_logic_vector(3, 4);  -- needed to use std_logic_arith library
+        num <= conv_std_logic_vector(3, 6);  -- needed to use std_logic_arith library
         en_a <= '1';
-        en_b <= '0';
-        en_c <= '0';
         sel_a_path <= '0';
+        en_b <= '0';
         sel_b_path <= '0';
-        alu_control <= conv_std_logic_vector(0, 3);
+        en_c <= '0';
         val_to_display <= "01";
-        wait for sim_delay;
+        alu_control <= conv_std_logic_vector(0, 3);
+        --wait for SIM_DELAY;
+        wait until falling_edge(clk);
+        wait until falling_edge(clk);
+        
+        -- instead of using "wait for SIM_DELAY" I could use "wait until falling_edge(clk)" x2 to pause 2 clk cycles
         
         -- load B with 5 
-        num <= conv_std_logic_vector(5, 4);
+        num <= conv_std_logic_vector(5, 6);  -- needed to use std_logic_arith library
         en_a <= '0';
-        en_b <= '1';
-        en_c <= '0';
         sel_a_path <= '0';
+        en_b <= '1';
         sel_b_path <= '0';
+        en_c <= '0';
+        val_to_display <= "10";
         alu_control <= conv_std_logic_vector(0, 3);
-        val_to_display <= "11";
-        wait for sim_delay;
+        --wait for SIM_DELAY;
+        wait until falling_edge(clk);
+        wait until falling_edge(clk);
         
         -- add A + B and place in C 
-        num <= conv_std_logic_vector(0, 4);
+        num <= conv_std_logic_vector(0, 6);  -- needed to use std_logic_arith library
         en_a <= '0';
-        en_b <= '0';
-        en_c <= '1';
         sel_a_path <= '0';
+        en_b <= '0';
         sel_b_path <= '0';
-        alu_control <= conv_std_logic_vector(0, 3);
+        en_c <= '1';
         val_to_display <= "00";
-        wait for sim_delay;
+        alu_control <= conv_std_logic_vector(0, 3);
+        --wait for SIM_DELAY;
+        wait until falling_edge(clk);
+        wait until falling_edge(clk);
         
         -- move C to A
-        num <= conv_std_logic_vector(0, 4);
+        num <= conv_std_logic_vector(0, 6);  -- needed to use std_logic_arith library
         en_a <= '1';
+        sel_a_path <= '1';
         en_b <= '0';
+        sel_b_path <= '0';
         en_c <= '0';
-        sel_a_path <= '1';
-        sel_b_path <= '0';
-        alu_control <= conv_std_logic_vector(0, 3);
         val_to_display <= "01";
-        wait for sim_delay;
-        
-        -- add something  -- i'll be honest, idk what this does
-        num <= conv_std_logic_vector(0, 4);
-        en_a <= '0';
-        en_b <= '0';
-        en_c <= '1';
-        sel_a_path <= '1';
-        sel_b_path <= '0';
         alu_control <= conv_std_logic_vector(0, 3);
+        --wait for SIM_DELAY;
+        wait until falling_edge(clk);
+        wait until falling_edge(clk);
+        
+        -- add a and b and puts it in c
+        num <= conv_std_logic_vector(0, 6);  -- needed to use std_logic_arith library
+        en_a <= '0';
+        sel_a_path <= '1';
+        en_b <= '0';
+        sel_b_path <= '0';
+        en_c <= '1';
         val_to_display <= "00";
-        wait for sim_delay;
+        alu_control <= conv_std_logic_vector(0, 3);
+        --wait for SIM_DELAY;
+        wait until falling_edge(clk);
+        wait until falling_edge(clk);
         
         -- move C to B 
-        num <= conv_std_logic_vector(0, 4);
+        num <= conv_std_logic_vector(0, 6);  -- needed to use std_logic_arith library
         en_a <= '0';
+        sel_a_path <= '1';
         en_b <= '1';
-        en_c <= '0';
-        sel_a_path <= '1';
         sel_b_path <= '1';
+        en_c <= '0';
+        val_to_display <= "10";
         alu_control <= conv_std_logic_vector(0, 3);
-        val_to_display <= "11";
-        wait for sim_delay;
+        --wait for SIM_DELAY;
+        wait until falling_edge(clk);
+        wait until falling_edge(clk);
         
-        -- add something  -- i'll be honest, idk what this does
-        num <= conv_std_logic_vector(0, 4);
+        -- adds a and b and puts it in c
+        num <= conv_std_logic_vector(0, 6);  -- needed to use std_logic_arith library
         en_a <= '0';
-        en_b <= '0';
-        en_c <= '1';
         sel_a_path <= '1';
+        en_b <= '0';
         sel_b_path <= '0';
-        alu_control <= conv_std_logic_vector(0, 3);
+        en_c <= '1';
         val_to_display <= "00";
-        wait for sim_delay;
+        alu_control <= conv_std_logic_vector(0, 3);
+        --wait for SIM_DELAY;
+        wait until falling_edge(clk);
+        wait until falling_edge(clk);
         
-        -- terminating process
+        -- terminating simulation
         assert false 
         report "Simulation Completed" 
         severity failure; 
         
     end process;
-    
-    -- generating clock 
-    --process
-    --begin
-    --    clk <= not clk after clock_delay;
-    --end process;
      
 end arch_tb;
