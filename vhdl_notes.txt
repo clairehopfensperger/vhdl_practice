@@ -4,6 +4,7 @@ link to txtbk: http://wuhongyi.cn/FPGANote/pdf/VHDL/FPGAPrototypingbyVHDLExample
 general notes:
 
 - pin assignments done in constraints, check pg 23 of txtbk
+
 - artificial failure to cleanly cut off sim in tb, check pg 28 of txtbk
 	- assert false 
    	  report "Simulation Completed" 
@@ -11,9 +12,39 @@ general notes:
 
 - doing arithmetic with std_logic_vector/std_logic, must do: 
 	- std_logic_vector(unsigned(num_a) [arithmetic, ex. +, -] unsigned (num_b));
-- =, >, < evaluate to booleans, so if i want to compare two std_logic_vector/std_logic, I have to do an if statement with the comparison as the condition and then hardcode the result inside the statement.
-- different ways to create a clock in a testbench: https://electronics.stackexchange.com/questions/148320/proper-clock-generation-for-vhdl-testbenches
 
+- =, >, < evaluate to booleans, so if i want to compare two std_logic_vector/std_logic, I have to do an if statement with the comparison as the condition and then hardcode the result inside the statement.
+
+- different ways to create a clock in a testbench: https://electronics.stackexchange.com/questions/148320/proper-clock-generation-for-vhdl-testbenches
+	- check for a simple clocked testbench: https://stackoverflow.com/questions/17904514/vhdl-how-should-i-create-a-clock-in-a-testbench
+
+- setting a std_logic_vector equal to a decimal value:
+	- use IEEE.std_logic_arith.ALL;
+	- conv_std_logic_vector(number, size (in bits));
+
+- txtbk pg 36 for operators and correlating data types
+
+- txtbk pg 36 for type casting
+
+- library numeric_std introduces unsigned and signed types as well as defines relational and arithmentic operators for the new types
+
+- pg 38 shows acceptable ways to type convert and cast etc
+
+- "others" keyword used like "default"
+
+- '&' is the concatination keyword/character
+
+- pg 53 constants and generics
+
+- pg 56 7-seg display code
+
+- pg 71 starts clocked stuff like D FFs and registers (!!! need to fix register.vhd)
+	- when setting a value to 0 on reset, can use "q <=(others=>’O’);" instead of "q <= "0000";"
+	- pg 76-78 D FF with synchronous reset (en) and register with multiple inputs (std_logic_vector)
+
+- pg 84 for sequential tb
+
+- implementing an FSM: https://www.allaboutcircuits.com/technical-articles/implementing-a-finite-state-machine-in-vhdl/
 
 ----------------------------------------------------------------------------------------
 instantiation:
