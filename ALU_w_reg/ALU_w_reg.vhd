@@ -35,7 +35,7 @@ entity ALU_w_reg is
     port (
         clk     : in std_logic;
         rst     : in std_logic;
-        num     : in std_logic_vector(3 downto 0);
+        num     : in std_logic_vector(5 downto 0);
         en_a    : in std_logic;
         en_b    : in std_logic;
         en_c    : in std_logic;
@@ -43,17 +43,17 @@ entity ALU_w_reg is
         sel_b_path  : in std_logic;  -- {0 = num, 1 = C}
         alu_control : in std_logic_vector(2 downto 0);
         val_to_disp : in std_logic_vector(1 downto 0);  -- {0 = C, 1 = A, 2 = B}
-        result  : out std_logic_vector(3 downto 0)
+        result  : out std_logic_vector(5 downto 0)
     );
 end ALU_w_reg;
 
 architecture arch_ALU_w_reg of ALU_w_reg is
-    signal result_a     : std_logic_vector(3 downto 0);
-    signal result_b     : std_logic_vector(3 downto 0);
-    signal result_c     : std_logic_vector(3 downto 0);
-    signal result_ALU   : std_logic_vector(3 downto 0);
-    signal in_a         : std_logic_vector(3 downto 0);
-    signal in_b         : std_logic_vector(3 downto 0);
+    signal result_a     : std_logic_vector(5 downto 0);
+    signal result_b     : std_logic_vector(5 downto 0);
+    signal result_c     : std_logic_vector(5 downto 0);
+    signal result_ALU   : std_logic_vector(5 downto 0);
+    signal in_a         : std_logic_vector(5 downto 0);
+    signal in_b         : std_logic_vector(5 downto 0);
 begin
 
     -- instantiations of registers
@@ -61,7 +61,7 @@ begin
         port map (
             clk => clk,
             rst => rst,
-            num => num,
+            num => in_a,
             en => en_a,
             result => result_a
         );
@@ -70,7 +70,7 @@ begin
         port map (
             clk => clk,
             rst => rst,
-            num => num,
+            num => in_b,
             en => en_b,
             result => result_b
         );
@@ -83,37 +83,47 @@ begin
             en => en_c,
             result => result_c
         );
+        
+    -- instantiation of ALU
+    alu : entity work.ALU(arch_ALU)
+        port map (
+            clk => clk,
+            num_a => result_a,
+            num_b => result_b,
+            control => alu_control,
+            result => result_ALU
+        );
     
     -- execution of stuff :)
     
     -- mux for putting stuff in reg A 
-    process (sel_a_path, in_a, result_c, num) is
+    process (sel_a_path, result_c, num) is
     begin
-        if sel_a_path = '0' then
+        if (sel_a_path = '0') then
             in_a <= num;
-        elsif sel_a_path = '1' then
+        elsif (sel_a_path = '1') then
             in_a <= result_c;
         end if;
     end process;
     
     -- mux for putting stuff in reg B
-    process (sel_b_path, in_b, result_c, num) is
+    process (sel_b_path, result_c, num) is
     begin
-        if sel_b_path = '0' then
+        if (sel_b_path = '0') then
             in_b <= num;
-        elsif sel_b_path = '1' then
+        elsif (sel_b_path = '1') then
             in_b <= result_c;
         end if;
     end process;
     
     -- mux for display path 
-    process (val_to_disp) is
+    process (val_to_disp, result_a, result_b, result_c) is
     begin
-        if val_to_disp = "00" then
+        if (val_to_disp = "00") then
             result <= result_c;
-        elsif val_to_disp = "01" then
+        elsif (val_to_disp = "01") then
             result <= result_a;
-        elsif val_to_disp = "11" then
+        elsif (val_to_disp = "10") then
             result <= result_b;
         end if;
     end process;
